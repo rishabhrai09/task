@@ -8,6 +8,7 @@ function App() {
   return (
     <div className="App">
       <FlavanoidsStatsComponent />
+      <div style={{marginTop:"10px"}}></div>
       <GammaTable />
     </div>
   );

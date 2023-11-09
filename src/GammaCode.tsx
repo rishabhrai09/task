@@ -96,30 +96,46 @@ const calculateMedian = (values: number[]) => {
 };
 
 const calculateMode = (values: number[]) => {
-  const modeMap: Record<number, number> = values.reduce((acc, val) => {
-    acc[val] = (acc[val] || 0) + 1;
-    return acc;
-  }, {} as Record<number, number>); // Explicitly specify the type
+  const modeMap: Record<string, number> = {};
 
+  // Count occurrences of each value
+  values.forEach((value) => {
+    const strValue = value.toString(); // Convert the number to a string for consistent key type
+    modeMap[strValue] = (modeMap[strValue] || 0) + 1;
+  });
+
+  console.log('Mode Map:', modeMap);
+
+  // Find the maximum count
   const maxCount = Math.max(...Object.values(modeMap));
+  console.log('Max Count:', maxCount);
+
+  // Filter values with the maximum count
   const modeValues = Object.entries(modeMap)
     .filter(([value, count]) => count === maxCount)
     .map(([value]) => parseFloat(value))
     .sort((a, b) => a - b);
 
-  return modeValues.map((value) => value.toFixed(3));
+  console.log('Mode Values:', modeValues);
+
+  return modeValues
 };
+
+
 
 const stats = calculateStats(dataset);
 
 // Display the calculated statistics
 console.log("Gamma Mean:", stats.mean.toFixed(3));
 console.log("Gamma Median:", stats.median);
-console.log("Gamma Mode:", stats.mode.join(", "));
+console.log("Gamma Mode:", stats.mode);
 
 // Step 4: Display results in a React component
 const GammaTable: React.FC = () => {
   const classes = Object.keys(groupedData);
+
+  // Define the measures you want to display
+  const measures = ["Gamma Mean", "Gamma Median", "Gamma Mode"];
 
   return (
     <table>
@@ -132,37 +148,26 @@ const GammaTable: React.FC = () => {
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Gamma</td>
-          {classes.map((classKey) => {
-            const stats = calculateStats(groupedData[classKey]);
-            return (
-              <td key={classKey}>
-                Mean: {stats.mean.toFixed(3)}
-                <br />
-                Median:{" "}
-                {typeof stats.median === "number"
+        {measures.map((measure) => (
+          <tr key={measure}>
+            <td>{measure}</td>
+            {classes.map((classKey) => {
+              const stats = calculateStats(groupedData[classKey]);
+              const value = measure === "Gamma Mean"
+                ? stats.mean.toFixed(3)
+                : measure === "Gamma Median"
+                ? typeof stats.median === "number"
                   ? stats.median.toFixed(3)
-                  : stats.median}
-                <br />
-                Mode:{" "}
-                {stats.mode
-                  .filter((value) => typeof value === "number")
-                  .map((value) => {
-                    if (typeof value === "number" ) {
-                      return value
-                    } else {
-                      return value;
-                    }
-                  })
-                  .join(", ")}
-              </td>
-            );
-          })}
-        </tr>
+                  : stats.median
+                : stats.mode.map((value) => value.toFixed(3)).join(", "); 
+              return <td key={classKey}>{value}</td>;
+            })}
+          </tr>
+        ))}
       </tbody>
     </table>
   );
 };
+
 
 export default GammaTable;
